@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.marketingqr.mapper.FeedMapper">
+
+	<!-- feeds 테이블 전체 컬럼 -->
+	<sql id="feedColumns">
+		feed_id
+		, f_fk_store_id
+		, content
+		, create_time
+		,
+		last_update_time
+		, delete_yn
+	</sql>
+	
+	<!-- feed_comments 테이블 전체 컬럼 -->
+	<sql id="feedCommentColumns">
+		feed_comment_id
+		, fc_fk_feed_id
+		, parent_comment_id
+		,
+		member_id
+		, classification
+		, group_num
+		, content
+		, create_time
+		,
+		last_update_time
+		, delete_yn
+	</sql>
+
+	<!-- 피드 보기 -->
+	<select id="viewFeed" parameterType="Long"
+		resultType="com.marketingqr.dto.FeedDto">
+		SELECT
+		<include refid="feedColumns" />
+		FROM
+		feeds
+		WHERE
+		f_fk_store_id = #{store_id}
+		ORDER BY
+		create_time DESC
+	</select>
+
+	<!-- 해당 feed의 좋아요 수 select -->
+	<select id="countFeedLike" parameterType="Long"
+		resultType="Long">
+		SELECT
+		count(*)
+		FROM
+		likes L
+		LEFT JOIN feeds F
+		ON L.l_fk_feed_id
+		= F.feed_id
+		WHERE F.feed_id = #{feed_id}
+	</select>
+
+	<!-- user의 feed 좋아요 -->
+	<insert id="doFeedLike"
+		parameterType="com.marketingqr.dto.FeedAndUser">
+		INSERT INTO likes(
+		l_fk_feed_id, l_fk_user_id
+		) VALUES(
+		#{feed_id}
+		, #{user_id}
+		)
+	</insert>
+
+	<!-- user의 feed 좋아요 취소 -->
+	<delete id="cancelFeedLike"
+		parameterType="com.marketingqr.dto.FeedAndUser">
+		DELETE FROM
+		likes
+		WHERE
+		l_fk_feed_id = #{feed_id} and
+		l_fk_user_id = #{user_id}
+	</delete>
+
+	<!-- feed 댓글 보기 -->
+	<select id="viewComment" parameterType="long"
+		resultType="com.marketingqr.dto.FeedComment">
+		SELECT
+		<include refid="feedCommentColumns" />
+		FROM
+		feed_comments
+		WHERE
+		fc_fk_feed_id = #{feed_id}
+		ORDER BY
+		create_time
+		DESC
+	</select>
+
+	<!-- user의 feed 댓글 달기 -->
+	<insert id="writeComment"
+		parameterType="com.marketingqr.dto.FeedComment">
+		INSERT INTO feed_comments(
+		fc_fk_feed_id
+		,
+		parent_comment_id
+		, member_id
+		, classification
+		, group_num
+		, content
+		,
+		create_time
+		) VALUES(
+		#{fc_fk_feed_id}
+		, #{parent_comment_id}
+		,
+		#{member_id}
+		, #{classification}
+		, #{group_num}
+		, #{content}
+		, NOW()
+		)
+	</insert>
+
+	<!-- user의 feed 댓글 수정 -->
+	<update id="modifyComment"
+		parameterType="com.marketingqr.dto.FeedComment">
+		UPDATE feed_comments
+		SET
+		content = #{content}
+		,
+		last_update_time = NOW()
+		WHERE
+		feed_comment_id = #{feed_comment_id}
+	</update>
+
+	<!-- user의 feed 댓글 삭제 -->
+	<delete id="deleteComment" parameterType="long">
+		UPDATE feed_comments
+		SET
+		delete_yn = 'Y'
+		WHERE
+		feed_comment_id = #{feed_comment_id}
+	</delete>
+
+</mapper>
+

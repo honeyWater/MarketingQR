@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.marketingqr.mapper.StoreMapper">
+
+<!-- users 테이블 전체 컬럼 -->
+	<sql id="storeColumns">
+		  store_id
+		, s_fk_store_user_id
+		, name
+		, address
+		, phone
+		, runtime
+		, introduction
+		, business_num
+		, represent_img
+	</sql>
+
+<!-- menus 테이블 전체 컬럼 -->
+	<sql id="menuColumns">
+		  menu_id
+		, m_fk_store_id
+		, menu_name
+		, price
+		, menu_intro
+		, menu_img_url
+	</sql>
+
+
+	<select id="selectStore" parameterType="String" resultType="com.marketingqr.dto.Stores">
+		SELECT
+			<include refid="storeColumns" />
+		FROM
+			stores
+		WHERE
+			name = #{name}
+	</select>
+	
+	<select id="findMenuAll" parameterType="String" resultType="com.marketingqr.dto.Menus">
+		SELECT
+			<include refid="menuColumns" />
+		FROM
+			menus as M JOIN stores as S
+		ON
+			m_fk_store_id = store_id
+		WHERE
+			name=#{name}
+		ORDER BY
+			menu_id
+	</select>
+	
+	<select id="countSubscribe" parameterType="String" resultType="long">
+		SELECT
+			COUNT(*)
+		FROM
+			subscribes JOIN stores ON ss_fk_store_id = store_id
+		WHERE
+			name=#{name}
+	</select>
+	
+	<select id="reviewRatingAvg" parameterType="String" resultType="double">
+		 SELECT
+		 	AVG(rating)
+		 FROM
+		 	reviews JOIN stores ON r_fk_store_id = store_id 
+		 WHERE
+		 	name=#{name}
+	</select>
+	
+	<insert id="Subscribe" parameterType="com.marketingqr.dto.Team" useGeneratedKeys="true" keyProperty="user_id">
+		INSERT INTO
+			subscribes(
+				ss_fk_user_id
+			  , ss_fk_store_id
+			)
+		VALUES
+			(
+				(select user_id from users where personal_id=#{personal_id})
+			  , (select store_id from stores where name=#{name})
+			)
+	</insert>
+	
+	<delete id="cancelSubscribe" parameterType="com.marketingqr.dto.Team">
+		DELETE
+		FROM
+			subscribes
+		WHERE(
+			ss_fk_user_id=(SELECT user_id FROM users WHERE personal_id = #{personal_id})
+		AND
+			ss_fk_store_id=(SELECT store_id FROM stores WHERE name = #{name})
+		)
+	</delete>
+</mapper>

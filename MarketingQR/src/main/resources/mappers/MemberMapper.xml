@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.marketingqr.mapper.MemberMapper">
+
+	<!-- users 테이블 전체 컬럼 -->
+	<sql id="memberColumns">
+		user_id
+		, personal_id
+		, password
+		, name
+		, nickname
+		, birth
+		, sex
+		, email
+		, phone
+		, user_image
+		, create_time
+		, last_update_time
+		, delete_time
+		, delete_yn
+	</sql>
+
+	<!-- useGeneratedKeys="true"는 mysql의 auto_increment를 사용하기 위해 설정해야 한다. keyProperty="columns"는 
+		auto_increment를 사용하는 컬럼값을 등록한다. -->
+	<insert id="saveMember"
+		parameterType="com.marketingqr.dto.MemberDto" useGeneratedKeys="true"
+		keyProperty="user_id">
+		INSERT INTO users(
+		personal_id
+		, password
+		, name
+		, nickname
+		, birth
+		, sex
+		, email
+		, phone
+		, user_image
+		, create_time
+		, last_update_time
+		, delete_time
+
+		) VALUES(
+		#{personal_id}
+		, #{password}
+		, #{name}
+		, #{nickname}
+		, #{birth}
+		, #{sex}
+		, #{email}
+		, #{phone}
+		, NULL
+		, NOW()
+		, NULL
+		, NULL
+		)
+	</insert>
+
+	<select id="selectMember" parameterType="long"
+		resultType="com.marketingqr.dto.MemberDto">
+		SELECT
+		<include refid="memberColumns" />
+		FROM
+		users
+		WHERE
+		user_id = #{user_id}
+	</select>
+</mapper>
